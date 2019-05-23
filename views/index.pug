@@ -1,0 +1,18 @@
+extends layout
+
+block content 
+  div(class="container expand")
+    div(class="list expand")
+      div(class="list-header")
+        a(href="/notes/new")
+          i(class="far fa-sticky-note")
+          |
+          | Nueva Nota
+      each note in notes
+        a(href="/notes/" + note._id class="note" + (currentNote && currentNote._id.equals(note._id) ? " active" : " "))
+          div(class="note-title")= note.title
+          div(class="note-body")= note.truncateBody()
+    div(class="body")
+      block body
+
+
