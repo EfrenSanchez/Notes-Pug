@@ -2,6 +2,7 @@
 const express = require("express");
 const cookieSession = require("cookie-session");
 const mongoose = require("mongoose");
+const md = require("marked");
 
 //Inits
 const app = express();
@@ -63,13 +64,12 @@ app.get("/notes/:id", async (req, res) => {
   const notes = await Note.find({});
   const note = await Note.findById(req.params.id);
 
-  res.render("show", { notes, currentNote: note });
+  res.render("show", { notes, currentNote: note, md: md });
 });
 
 /** PATCH (id) => Update a Note */
-app.patch("notes/:id", async (req, res, next) => {
-  const id = req.params.id;
-  const note = await Note.findById(id);
+app.patch("/notes/:id", async (req, res, next) => {
+  const note = await Note.findById(req.params.id);
 
   note.title = req.body.title;
   note.body = req.body.body;
