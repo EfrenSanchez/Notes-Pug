@@ -2,9 +2,13 @@
 const mongoose = require("mongoose");
 
 //Schema
-const NoteShema = mongoose.Schema({
+const NoteShema =  mongoose.Schema({
   title: {type: String, require: true},
-  body: String
+  body: String,
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
 });
 
 NoteShema.methods.truncateBody = function () {

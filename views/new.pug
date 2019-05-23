@@ -5,7 +5,7 @@ block body
     form(action="/notes", method="post")
       div
         input(type="text", name="title", id="title", placeholder="Escribe un título ...", autocomplete="off")
-      div
+      div(class="body-container")
         textarea(type="textarea", name="body", id="body", rows="8", placeholder="Escribe tu nota...")
       
       div(class="form-actions")
@@ -15,11 +15,15 @@ block body
   script. 
     var textarea = document.getElementById("body");
     var heightLimit = 1000; /* Maximun height 1000px */
+    heightLimit -= 400;
 
-    textarea.oninput = function() {
-      textarea.style.height = ""; /* Reset the height */
-      textearea.style.height = Math.min(textarea.scrollHeight, heightLimit) + "px";
-    };
+    function adjustHeight() {
+      textarea.style.height = ""; //Reset the height
+      textarea.style.height = Math.min(textarea.scrollHeight, heightLimit) + "px";
+    }
+
+    textarea.oninput = adjustHeight;
+    adjustHeight();
         
 
       

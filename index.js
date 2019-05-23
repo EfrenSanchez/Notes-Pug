@@ -8,11 +8,12 @@ const md = require("marked");
 const app = express();
 mongoose.connect(
   "mongodb://Notes:notes123@ds259806.mlab.com:59806/notes-node-pug",
-  { useNewUrlParser: true }
+  { useNewUrlParser: true, useCreateIndex: true }
 );
 
 //Shemas
 const Note = require("./models/Note");
+const User = require("./models/User");
 
 //Pug
 app.set("view engine", "pug");
@@ -28,25 +29,49 @@ app.use(
 );
 app.use("/assets", express.static("assets"));
 
+const requireUser = (req, res, next) => {
+  if (!res.locals.user) {
+    return res.redirect("/login");
+  }
+
+  next();
+};
+
+app.use(async (req, res, next) => { // User auth
+  const userId = req.session.userId;
+
+  if (userId) {
+    const user = await User.findById(userId);
+    if (user) {
+      res.locals.user = user;
+    } else {
+      delete req.session.userId;
+    }
+  }
+
+  next();
+});
+
 //Routes
 
 /** GET => Note list */
-app.get("/", async (req, res) => {
-  const notes = await Note.find({});
+app.get("/", requireUser, async (req, res) => {
+  const notes = await Note.find({ user: res.locals.user });
   res.render("index", { notes });
 });
 
 /** GET => Form to create New Note */
-app.get("/notes/new", async (req, res) => {
-  const notes = await Note.find({});
+app.get("/notes/new", requireUser, async (req, res) => {
+  const notes = await Note.find({ user: res.locals.user });
   res.render("new", { notes });
 });
 
 /** POST  => Create a New Note*/
-app.post("/notes", async (req, res, next) => {
+app.post("/notes", requireUser, async (req, res, next) => {
   const data = {
     title: req.body.title,
-    body: req.body.body
+    body: req.body.body,
+    user: res.locals.user
   };
 
   try {
@@ -60,15 +85,15 @@ app.post("/notes", async (req, res, next) => {
 });
 
 /** GET (id) => Show a Note */
-app.get("/notes/:id", async (req, res) => {
-  const notes = await Note.find({});
+app.get("/notes/:id", requireUser, async (req, res) => {
+  const notes = await Note.find({ user: res.locals.user });
   const note = await Note.findById(req.params.id);
 
   res.render("show", { notes, currentNote: note, md: md });
 });
 
 /** PATCH (id) => Update a Note */
-app.patch("/notes/:id", async (req, res, next) => {
+app.patch("/notes/:id", requireUser, async (req, res, next) => {
   const note = await Note.findById(req.params.id);
 
   note.title = req.body.title;
@@ -83,7 +108,7 @@ app.patch("/notes/:id", async (req, res, next) => {
 });
 
 /** DELETE (id) => Delete a Note */
-app.delete("/notes/:id", async (req, res, next) => {
+app.delete("/notes/:id", requireUser, async (req, res, next) => {
   try {
     await Note.deleteOne({ _id: req.params.id });
     res.status(204).send({});
@@ -93,11 +118,64 @@ app.delete("/notes/:id", async (req, res, next) => {
 });
 
 /** GET (id) => Form to edit a note */
-app.get("/notes/:id/edit", async (req, res) => {
+app.get("/notes/:id/edit", requireUser, async (req, res) => {
   const notes = await Note.find();
   const note = await Note.findById(req.params.id);
 
   res.render("edit", { notes, currentNote: note });
+});
+
+/** */
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
+/** */
+app.post("/register", async (req, res, next) => {
+  const data = {
+    email: req.body.email,
+    password: req.body.password,
+    name: req.body.name
+  };
+
+  try {
+    const newUser = new User(data);
+    await newUser.save();
+  } catch (err) {
+    return next(err);
+  }
+
+  res.redirect("/");
+});
+
+/** */
+app.get("/login", (req, res) => {
+  res.render("login");
+});
+
+/** */
+app.post("/login", async (req, res, next) => {
+  try {
+    const user = await User.authenticate(req.body.email, req.body.password);
+    if (user) {
+      req.session.userId = user._id;
+      console.log("Success");
+      return res.redirect("/");
+    } else {
+      console.log("Email o contraseña no coinciden");
+      res.render("login", { error: "Email o contraseña no coinciden" })
+    }
+  } catch (err) {
+    return next(err);
+  }
+});
+
+/** */
+app.get("/logout", requireUser, (req, res) => {
+  res.session = null;
+  res.clearCookie("session");
+  res.clearCookie("session.sig");
+  res.redirect("/login");
 });
 
 //Error handler

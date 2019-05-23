@@ -1,0 +1,24 @@
+extends layout
+
+block content
+  div(class="auth-page expand")
+    div(class="card")
+      div(class="card-header")
+        | Registrarse
+      form(action="/register", method="post")
+        div(class="card-body")
+          div(class="form-group")
+            label(for="email") Email
+            input(type="email", id="email", name="email")
+          div(class="form-group")
+            label(for="password") Contraseña
+            input(type="password", id="password", name="password")
+          div(class="form-group")
+            label(for="name") Nombre
+            input(type="text", id="name", name="name")
+        
+        div(class="card-footer")
+          div(class="small")
+            | Estas ya registrado? 
+            a(href="/login") 👻 Ir a Login
+          button(type="submit", class="btn btn-primary") Aceptar
