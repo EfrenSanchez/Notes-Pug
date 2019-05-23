@@ -7,7 +7,7 @@ const md = require("marked");
 //Inits
 const app = express();
 mongoose.connect(
-  "mongodb://Notes:notes123@ds259806.mlab.com:59806/notes-node-pug",
+  "mongodb://<db:pass>@ds259806.mlab.com:59806/notes-node-pug",
   { useNewUrlParser: true, useCreateIndex: true }
 );
 
