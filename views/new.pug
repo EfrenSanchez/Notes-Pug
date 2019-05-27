@@ -3,8 +3,12 @@ extends index
 block body
   div(class="note-form-page")
     form(action="/notes", method="post")
-      div
-        input(type="text", name="title", id="title", placeholder="Escribe un título ...", autocomplete="off")
+      div(class="form-group")
+        input(type="text", name="title", id="title", placeholder="Escribe un título ...", autocomplete="off", autofocus)
+        if errors && errors.title
+          div(class="error")
+            i(class="fa fa-exclamation-triangle error-icon")
+            div(class="error-text")=errors.title.message
       div(class="body-container")
         textarea(type="textarea", name="body", id="body", rows="8", placeholder="Escribe tu nota...")
       
@@ -24,6 +28,17 @@ block body
 
     textarea.oninput = adjustHeight;
     adjustHeight();
+
+    var errorIcon = document.querySelector(".error-icon");
+    errorIcon.addEventListener("mouseover", function() {
+      var errorText = document.querySelector(".error-text");
+      errorText.classList.add("show");
+    });
+
+    errorIcon.addEventListener("mouseout", function() {
+      var errorText = document.querySelector(".error-text");
+      errorText.classList.remove("show");
+    });
         
 
       

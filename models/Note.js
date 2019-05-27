@@ -3,7 +3,10 @@ const mongoose = require("mongoose");
 
 //Schema
 const NoteShema =  mongoose.Schema({
-  title: {type: String, require: true},
+  title: {
+    type: String,
+    required: [true, "Tienes que poner un titulo"]
+  },
   body: String,
   user: {
     type: mongoose.Schema.Types.ObjectId,

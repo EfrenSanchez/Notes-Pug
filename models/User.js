@@ -6,24 +6,37 @@ const bcrypt = require("bcrypt");
 const schema = new mongoose.Schema({
   name: {
     type: String,
-    required: true, 
+    required: [true, "🤷‍♀ Y tu nombre?"],
     unique: true
   },
   password: {
     type: String,
-    required: true
+    required: [true, "🤷‍♀ EH! Olvidaste la contraseña"]
   },
   email: {
     type: String,
-    required: true,
+    required: [true, "🤷‍♀ Cuál es tu correo?"],
     unique: true,
     lowercase: true,
-    trim: true
+    trim: true,
+    match: [
+      /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/,
+      "👀 Eso no parece un email..."
+    ],
+    validate: {
+      validator(v) {
+        return mongoose
+          .model("User")
+          .findOne({ email: v })
+          .then(u => !u);
+      },
+      message: "😪 Ups! ése email esta ya registrado"
+    }
   }
 });
 
 // Hashing passwords. Before "save"
-schema.pre("save", function (next) {
+schema.pre("save", function(next) {
   bcrypt.hash(this.password, 10, (err, hash) => {
     if (err) {
       return next(err);
@@ -33,7 +46,7 @@ schema.pre("save", function (next) {
   });
 });
 
-// Comparing crypt passwords 
+// Comparing crypt passwords
 schema.statics.authenticate = async (email, password) => {
   const user = await mongoose.model("User").findOne({ email });
   if (user) {
@@ -47,6 +60,6 @@ schema.statics.authenticate = async (email, password) => {
   }
 
   return null;
-}
+};
 
 module.exports = mongoose.model("User", schema);

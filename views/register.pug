@@ -1,6 +1,8 @@
 extends layout
 
 block content
+  include mixins
+
   div(class="auth-page expand")
     div(class="card")
       div(class="card-header")
@@ -8,14 +10,17 @@ block content
       form(action="/register", method="post")
         div(class="card-body")
           div(class="form-group")
-            label(for="email") Email
-            input(type="email", id="email", name="email")
+            label(for="email") * Email 
+            input(type="email", id="email", name="email", class=errors && errors.email ? "has-errors" : "")
+            +error(errors, "email")
           div(class="form-group")
-            label(for="password") Contraseña
-            input(type="password", id="password", name="password")
+            label(for="password") * Contraseña 
+            input(type="password", id="password", name="password", class=errors && errors.password ? "has-errors" : "")
+            +error(errors, "password")
           div(class="form-group")
-            label(for="name") Nombre
-            input(type="text", id="name", name="name")
+            label(for="name") * Nombre 
+            input(type="text", id="name", name="name", class=errors && errors.name ? "has-errors" : "")
+            +error(errors, "name")
         
         div(class="card-footer")
           div(class="small")

@@ -2,7 +2,6 @@
 const { Router } = require("express");
 const requireUser = require("../assets/tools");
 const md = require("marked");
-const alert = require("alert-node");
 
 const router = new Router();
 
@@ -34,11 +33,16 @@ router.post("/notes", requireUser, async (req, res, next) => {
   try {
     const note = new Note(data);
     await note.save();
-  } catch (err) {
-    return next(err);
-  }
 
-  res.redirect("/");
+    res.redirect("/");
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      const notes = await Note.find({ user: res.locals.user });
+      res.render("new", { errors: err.errors, notes });
+    } else {
+      return next(err);
+    }
+  }
 });
 
 /** GET (id) => Show a Note */
@@ -95,13 +99,10 @@ router.post("/login", async (req, res, next) => {
     
     if (user) {
       req.session.userId = user._id;
-      alert('howdy');
 
       return res.redirect("/");
     } else {
-      alert('Email y/o contraseña no coinciden');
-      
-      res.render("login", { error: "Email y/o contraseña no coinciden" });
+      res.render("login", { error: "🤬 Escribiste mal el email y/o contraseña" });
     }
   } catch (err) {
     return next(err);
@@ -126,7 +127,11 @@ router.post("/register", async (req, res, next) => {
     const newUser = new User(data);
     await newUser.save();
   } catch (err) {
-    return next(err);
+    if (err.name === "ValidationError") {
+      res.render("register", { errors: err.errors });
+    } else {
+      return next(err);
+    }
   }
 
   res.redirect("/");
